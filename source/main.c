@@ -29,27 +29,38 @@ typedef struct _task{
 unsigned char numRows = 5;
 unsigned char numCols = 8;
 unsigned char i;
+int snakePos[40][2];
+unsigned char snakeLength;
 
 unsigned char fruitEaten = 0;
 unsigned char fruitCol = 0;
 unsigned char fruitRow = 0;
-enum fruitStates{Fruit_wait, Fruit_eaten};
+void generateFruit(){
+	fruitRow = rand() % numRows;
+	fruitCol = rand() % numCols;
+	i=0;
+	while (i < snakeLength){
+		if (fruitRow == snakePos[i][0] && fruitCol == snakePos[i][1]){
+			i=0;
+			fruitRow = rand() % numRows;
+			fruitCol = rand() % numCols;
+		}
+		else{
+			i++;
+		}
+	}
+}
+enum fruitStates{Fruit_wait};
 int TickFruit(int state){
 	switch(state){
 		case Fruit_wait:
 			if (fruitEaten){
-				state = Fruit_eaten;
+				generateFruit();
 				fruitEaten = 0;
 			}
 			break;
-		case Fruit_eaten:
-			fruitRow = rand() % numRows;
-			fruitCol = rand() % numCols;
-			state = Fruit_wait;
-			break;
 		default:
-			fruitRow = rand() % numRows;
-			fruitCol = rand() % numCols;
+			generateFruit();
 			fruitEaten = 0;
 			state = Fruit_wait;
 			break;
@@ -57,8 +68,21 @@ int TickFruit(int state){
 	return state;
 }
 
-int snakePos[40][2];
-unsigned char snakeLength;
+unsigned char checkCollision(int nextRow, int nextCol){
+	if (nextRow == -1 || nextRow == numRows){
+		return 1;
+	}
+	if (nextCol == -1 || nextCol == numCols){
+		return 1;
+	}
+	for (i=0; i < snakeLength; i++){
+		if (nextRow == snakePos[i][0] && nextCol == snakePos[i][1]){
+			return 1;
+		}
+	}
+	return 0;
+}
+
 unsigned char direction = 1; //0 = up, 1 = down, 2 = right, 3 = left;
 unsigned char gameOver = 0;
 unsigned char currRow;
@@ -74,7 +98,6 @@ int TickSnake(int state){
 				fruitEaten = 1;
 				snakeLength++;
 			}
-
 			for (i=snakeLength-1; i > 0; i--){ //rightshift array
 				snakePos[i][0] = snakePos[i-1][0];
 				snakePos[i][1] = snakePos[i-1][1];
@@ -82,7 +105,7 @@ int TickSnake(int state){
 			currRow = snakePos[0][0];
 			currCol = snakePos[0][1];
 			if (direction == 0){
-				if (currRow == 0){
+				if(checkCollision(currRow-1, currCol)){
 					state = Snake_end;
 				}
 				else{
@@ -90,7 +113,7 @@ int TickSnake(int state){
 				}
 			}
 			else if (direction == 1){
-				if (currRow == numRows - 1){
+				if (checkCollision(currRow+1, currCol)){
 					state = Snake_end;
 				}
 				else{
@@ -98,7 +121,7 @@ int TickSnake(int state){
 				}
 			}
 			else if(direction == 2){
-				if (currCol == numCols){
+				if (checkCollision(currRow, currCol+1)){
 					state = Snake_end;
 				}
 				else{
@@ -106,13 +129,15 @@ int TickSnake(int state){
 				}
 			}
 			else if(direction == 3){
-				if (currCol == 0){
+				if (checkCollision(currRow, currCol-1)){
 					state = Snake_end;
 				}
 				else{
 					snakePos[0][1]--; //move left
 				}
 			}
+			
+
 			break;
 		case Snake_end:
 			break;
