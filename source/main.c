@@ -61,6 +61,8 @@ int snakePos[40][2];
 unsigned char snakeLength;
 unsigned char direction = 1; //0 = up, 1 = down, 2 = right, 3 = left;
 unsigned char gameOver = 0;
+unsigned char currRow;
+unsigned char currCol;
 enum snakeStates{Snake_start, Snake_move, Snake_end}state;
 int TickSnake(int state){
 	switch(state){
@@ -77,8 +79,10 @@ int TickSnake(int state){
 				snakePos[i][0] = snakePos[i-1][0];
 				snakePos[i][1] = snakePos[i-1][1];
 			}
+			currRow = snakePos[0][0];
+			currCol = snakePos[0][1];
 			if (direction == 0){
-				if (snakePos[0][0] == 0){
+				if (currRow == 0){
 					state = Snake_end;
 				}
 				else{
@@ -86,7 +90,7 @@ int TickSnake(int state){
 				}
 			}
 			else if (direction == 1){
-				if (snakePos[0][0] == numRows - 1){
+				if (currRow == numRows - 1){
 					state = Snake_end;
 				}
 				else{
@@ -94,7 +98,7 @@ int TickSnake(int state){
 				}
 			}
 			else if(direction == 2){
-				if (snakePos[0][1] == numCols){
+				if (currCol == numCols){
 					state = Snake_end;
 				}
 				else{
@@ -102,7 +106,7 @@ int TickSnake(int state){
 				}
 			}
 			else if(direction == 3){
-				if (snakePos[0][1] == 0){
+				if (currCol == 0){
 					state = Snake_end;
 				}
 				else{
@@ -191,91 +195,101 @@ int TickLights(int state){
 			if (gameOver){
 				state = Light_end;
 			}
-			pattern = 0x00;
-			row = 0xFE;
-			one = 0x80;
-			if (fruitRow == 0){
-				pattern |= one >> fruitCol;
-			}
-			for (j=0; j < snakeLength; j++){
-				if (snakePos[j][0] == 0){
-					one = 0x80;
-					pattern |= one >> snakePos[j][1];
+			else{
+				pattern = 0x00;
+				row = 0xFE;
+				one = 0x80;
+				if (fruitRow == 0){
+					pattern |= one >> fruitCol;
 				}
+				for (j=0; j < snakeLength; j++){
+					if (snakePos[j][0] == 0){
+						one = 0x80;
+						pattern |= one >> snakePos[j][1];
+					}
+				}
+				state = Light_row1;
 			}
-			state = Light_row1;
 			break;
 		case Light_row1:
 			if (gameOver){
 				state = Light_end;
 			}
-			pattern = 0x00;
-			row = 0xFD;
-			one = 0x80;
-			if (fruitRow == 1){
-				pattern |= one >> fruitCol;
-			}
-			for (j=0; j < snakeLength; j++){
-				if (snakePos[j][0] == 1){
-					one = 0x80;
-					pattern |= one >> snakePos[j][1];
+			else{
+				pattern = 0x00;
+				row = 0xFD;
+				one = 0x80;
+				if (fruitRow == 1){
+					pattern |= one >> fruitCol;
 				}
+				for (j=0; j < snakeLength; j++){
+					if (snakePos[j][0] == 1){
+						one = 0x80;
+						pattern |= one >> snakePos[j][1];
+					}
+				}
+				state = Light_row2;
 			}
-			state = Light_row2;
 			break;
 		case Light_row2:
 			if (gameOver){
 				state = Light_end;
 			}
-			pattern = 0x00;
-			row = 0xFB;
-			one = 0x80;
-			if (fruitRow == 2){
-				pattern |= one >> fruitCol;
-			}
-			for (j=0; j < snakeLength; j++){
-				if (snakePos[j][0] == 2){
-					one = 0x80;
-					pattern |= one >> snakePos[j][1];
+			else{
+				pattern = 0x00;
+				row = 0xFB;
+				one = 0x80;
+				if (fruitRow == 2){
+					pattern |= one >> fruitCol;
 				}
+				for (j=0; j < snakeLength; j++){
+					if (snakePos[j][0] == 2){
+						one = 0x80;
+						pattern |= one >> snakePos[j][1];
+					}
+				}
+				state = Light_row3;
 			}
-			state = Light_row3;
 			break;
 		case Light_row3:
 			if (gameOver){
 				state = Light_end;
 			}
-			pattern = 0x00;
-			row = 0xF7;
-			one = 0x80;
-			if (fruitRow == 3){
-				pattern |= one >> fruitCol;
-			}
-			for (j=0; j < snakeLength; j++){
-				if (snakePos[j][0] == 3){
-					one = 0x80;
-					pattern |= one >> snakePos[j][1];
+			else{
+				pattern = 0x00;
+				row = 0xF7;
+				one = 0x80;
+				if (fruitRow == 3){
+					pattern |= one >> fruitCol;
 				}
+				for (j=0; j < snakeLength; j++){
+					if (snakePos[j][0] == 3){
+						one = 0x80;
+						pattern |= one >> snakePos[j][1];
+					}
+				}
+				state = Light_row4;
 			}
-			state = Light_row4;
 			break;
 		case Light_row4:
 			if (gameOver){
 				state = Light_end;
 			}
-			pattern = 0x00;
-			row = 0xEF;
-			one = 0x80;
-			if (fruitRow == 4){
-				pattern |= one >> fruitCol;
-			}
-			for (j=0; j < snakeLength; j++){
-				if (snakePos[j][0] == 4){
-					one = 0x80;
-					pattern |= one >> snakePos[j][1];
+			else{
+				pattern = 0x00;
+				row = 0xEF;
+				one = 0x80;
+				if (fruitRow == 4){
+					pattern |= one >> fruitCol;
 				}
+				for (j=0; j < snakeLength; j++){
+					if (snakePos[j][0] == 4){
+						one = 0x80;
+						pattern |= one >> snakePos[j][1];
+					}
+				}
+				state = Light_row0;
 			}
-			state = Light_row0;
 			break;
 		case Light_end:
 			pattern = 0xFF;
