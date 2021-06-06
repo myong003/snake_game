@@ -238,13 +238,9 @@ unsigned char one = 0x01;
 unsigned char j;
 unsigned int counter;
 enum LightStates{Light_wait, Light_waitRelease, Light_row0, Light_row1, Light_row2, Light_row3, Light_row4, Light_end};
-int TickLights(int state){
-	
+int TickLights(int state){	
 	switch (state){
 		case Light_wait:
-			pattern = 0x81;
-			row = 0xEE;
-			counter = 0;
 			if (buttonPressed){
 				state = Light_waitRelease;
 			}
@@ -256,25 +252,12 @@ int TickLights(int state){
 				gameOver = 0;
 				generateFruit();
 			}
-			counter++;
 			break;
 		case Light_row0:
 			if (gameOver){
 				state = Light_end;
 			}
 			else{
-				pattern = 0x00;
-				row = 0xFE;
-				one = 0x80;
-				if (fruitRow == 0){
-					pattern |= one >> fruitCol;
-				}
-				for (j=0; j < snakeLength; j++){
-					if (snakePos[j][0] == 0){
-						one = 0x80;
-						pattern |= one >> snakePos[j][1];
-					}
-				}
 				state = Light_row1;
 			}
 			break;
@@ -283,18 +266,6 @@ int TickLights(int state){
 				state = Light_end;
 			}
 			else{
-				pattern = 0x00;
-				row = 0xFD;
-				one = 0x80;
-				if (fruitRow == 1){
-					pattern |= one >> fruitCol;
-				}
-				for (j=0; j < snakeLength; j++){
-					if (snakePos[j][0] == 1){
-						one = 0x80;
-						pattern |= one >> snakePos[j][1];
-					}
-				}
 				state = Light_row2;
 			}
 			break;
@@ -303,18 +274,6 @@ int TickLights(int state){
 				state = Light_end;
 			}
 			else{
-				pattern = 0x00;
-				row = 0xFB;
-				one = 0x80;
-				if (fruitRow == 2){
-					pattern |= one >> fruitCol;
-				}
-				for (j=0; j < snakeLength; j++){
-					if (snakePos[j][0] == 2){
-						one = 0x80;
-						pattern |= one >> snakePos[j][1];
-					}
-				}
 				state = Light_row3;
 			}
 			break;
@@ -323,18 +282,6 @@ int TickLights(int state){
 				state = Light_end;
 			}
 			else{
-				pattern = 0x00;
-				row = 0xF7;
-				one = 0x80;
-				if (fruitRow == 3){
-					pattern |= one >> fruitCol;
-				}
-				for (j=0; j < snakeLength; j++){
-					if (snakePos[j][0] == 3){
-						one = 0x80;
-						pattern |= one >> snakePos[j][1];
-					}
-				}
 				state = Light_row4;
 			}
 			break;
@@ -343,27 +290,97 @@ int TickLights(int state){
 				state = Light_end;
 			}
 			else{
-				pattern = 0x00;
-				row = 0xEF;
-				one = 0x80;
-				if (fruitRow == 4){
-					pattern |= one >> fruitCol;
-				}
-				for (j=0; j < snakeLength; j++){
-					if (snakePos[j][0] == 4){
-						one = 0x80;
-						pattern |= one >> snakePos[j][1];
-					}
-				}
 				state = Light_row0;
+			}
+			break;
+		case Light_end:
+			break;
+		default:
+			state = Light_wait;
+			break;
+	}
+	switch(state){
+		case Light_wait:
+			pattern = 0x81;
+			row = 0xE0;
+			counter = 0;
+			break;
+		case Light_waitRelease:
+			counter++;
+			break;
+		case Light_row0:
+			pattern = 0x00;
+			row = 0xFE;
+			one = 0x80;
+			if (fruitRow == 0){
+				pattern |= one >> fruitCol;
+			}
+			for (j=0; j < snakeLength; j++){
+				if (snakePos[j][0] == 0){
+					one = 0x80;
+					pattern |= one >> snakePos[j][1];
+				}
+			}
+			break;
+		case Light_row1:
+			pattern = 0x00;
+			row = 0xFD;
+			one = 0x80;
+			if (fruitRow == 1){
+				pattern |= one >> fruitCol;
+			}
+			for (j=0; j < snakeLength; j++){
+				if (snakePos[j][0] == 1){
+					one = 0x80;
+					pattern |= one >> snakePos[j][1];
+				}
+			}
+			break;
+		case Light_row2:
+			pattern = 0x00;
+			row = 0xFB;
+			one = 0x80;
+			if (fruitRow == 2){
+				pattern |= one >> fruitCol;
+			}
+			for (j=0; j < snakeLength; j++){
+				if (snakePos[j][0] == 2){
+					one = 0x80;
+					pattern |= one >> snakePos[j][1];
+				}
+			}
+			break;
+		case Light_row3:
+			pattern = 0x00;
+			row = 0xF7;
+			one = 0x80;
+			if (fruitRow == 3){
+				pattern |= one >> fruitCol;
+			}
+			for (j=0; j < snakeLength; j++){
+				if (snakePos[j][0] == 3){
+					one = 0x80;
+					pattern |= one >> snakePos[j][1];					}
+			}
+			break;
+		case Light_row4:
+			pattern = 0x00;
+			row = 0xEF;
+			one = 0x80;
+			if (fruitRow == 4){
+				pattern |= one >> fruitCol;
+			}
+			for (j=0; j < snakeLength; j++){
+				if (snakePos[j][0] == 4){
+					one = 0x80;
+					pattern |= one >> snakePos[j][1];
+				}
 			}
 			break;
 		case Light_end:
 			pattern = 0xFF;
 			row = 0xEE;
 			break;
-		default:
-			state = Light_wait;
 	}
 	PORTC = pattern;
 	PORTD = row;
