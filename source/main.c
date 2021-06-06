@@ -87,6 +87,8 @@ unsigned char direction = 1; //0 = up, 1 = down, 2 = right, 3 = left;
 unsigned char gameOver = 0;
 unsigned char currRow;
 unsigned char currCol;
+unsigned char lastRow;
+unsigned char lastCol;
 enum snakeStates{Snake_start, Snake_move, Snake_end}state;
 int TickSnake(int state){
 	switch(state){
@@ -94,10 +96,8 @@ int TickSnake(int state){
 			state = Snake_move;
 			break;
 		case Snake_move:
-			if (snakePos[0][0] == fruitRow && snakePos[0][1] == fruitCol){
-				fruitEaten = 1;
-				snakeLength++;
-			}
+			lastRow = snakePos[snakeLength-1][0];
+			lastCol = snakePos[snakeLength-1][1];
 			for (i=snakeLength-1; i > 0; i--){ //rightshift array
 				snakePos[i][0] = snakePos[i-1][0];
 				snakePos[i][1] = snakePos[i-1][1];
@@ -109,6 +109,9 @@ int TickSnake(int state){
 					state = Snake_end;
 				}
 				else{
+					if (currRow == fruitRow+1 && currCol == fruitCol){
+						fruitEaten = 1;
+					}
 					snakePos[0][0]--; //move up
 				}
 			}
@@ -117,6 +120,9 @@ int TickSnake(int state){
 					state = Snake_end;
 				}
 				else{
+					if (currRow == fruitRow-1 && currCol == fruitCol){
+						fruitEaten = 1;
+					}
 					snakePos[0][0]++; //move down
 				}
 			}
@@ -125,6 +131,9 @@ int TickSnake(int state){
 					state = Snake_end;
 				}
 				else{
+					if (currRow == fruitRow && currCol == fruitCol-1){
+						fruitEaten = 1;
+					}
 					snakePos[0][1]++; //move right
 				}
 			}
@@ -133,11 +142,18 @@ int TickSnake(int state){
 					state = Snake_end;
 				}
 				else{
+					if (currRow == fruitRow && currCol == fruitCol+1){
+						fruitEaten = 1;
+					}
 					snakePos[0][1]--; //move left
 				}
 			}
 			
-
+			if (fruitEaten){
+				snakePos[snakeLength][0] = lastRow;
+				snakePos[snakeLength][1] = lastCol;
+				snakeLength++;
+			}
 			break;
 		case Snake_end:
 			break;
