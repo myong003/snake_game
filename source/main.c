@@ -19,6 +19,7 @@ void A2D_init(){
 	ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE);
 }
 
+
 typedef struct _task{
 	signed char state;
 	unsigned long int period;
@@ -31,6 +32,7 @@ unsigned char numCols = 8;
 unsigned char i;
 int snakePos[40][2];
 unsigned char snakeLength;
+unsigned char gameOver = 1;
 
 unsigned char fruitEaten = 0;
 unsigned char fruitCol = 0;
@@ -50,9 +52,15 @@ void generateFruit(){
 		}
 	}
 }
-enum fruitStates{Fruit_wait};
+enum fruitStates{Fruit_start, Fruit_wait};
 int TickFruit(int state){
 	switch(state){
+		case Fruit_start:
+			if (!gameOver){
+				state = Fruit_wait;
+				fruitEaten = 0;
+			}
+			break;
 		case Fruit_wait:
 			if (fruitEaten){
 				generateFruit();
@@ -60,9 +68,7 @@ int TickFruit(int state){
 			}
 			break;
 		default:
-			generateFruit();
-			fruitEaten = 0;
-			state = Fruit_wait;
+			state = Fruit_start;
 			break;
 	}
 	return state;
@@ -83,8 +89,7 @@ unsigned char checkCollision(int nextRow, int nextCol){
 	return 0;
 }
 
-unsigned char direction = 1; //0 = up, 1 = down, 2 = right, 3 = left;
-unsigned char gameOver = 0;
+unsigned char direction = 4; //0 = up, 1 = down, 2 = right, 3 = left, 4 = not started;
 unsigned char currRow;
 unsigned char currCol;
 unsigned char lastRow;
@@ -93,7 +98,9 @@ enum snakeStates{Snake_start, Snake_move, Snake_end}state;
 int TickSnake(int state){
 	switch(state){
 		case Snake_start:
-			state = Snake_move;
+			if (!gameOver){
+				state = Snake_move;
+			}
 			break;
 		case Snake_move:
 			lastRow = snakePos[snakeLength-1][0];
@@ -148,7 +155,6 @@ int TickSnake(int state){
 					snakePos[0][1]--; //move left
 				}
 			}
-			
 			if (fruitEaten){
 				snakePos[snakeLength][0] = lastRow;
 				snakePos[snakeLength][1] = lastCol;
@@ -164,21 +170,13 @@ int TickSnake(int state){
 	switch(state){
 		case Snake_start:
 			snakeLength = 1;
-			snakePos[0][0] = 0;
-			snakePos[0][1] = 0;
-			direction = 1;
-			gameOver = 0;
+			snakePos[0][0] = 2;
+			snakePos[0][1] = 3;
 			break;
 		case Snake_move:
 			break;
 		case Snake_end:
 			gameOver = 1;
-			break;
-		default:
-			snakeLength = 1;
-			snakePos[0][0] = 0;
-			snakePos[0][1] = 0;
-			direction = 1;
 			break;
 	}
 	return state;
@@ -188,6 +186,7 @@ unsigned char moveUp;
 unsigned char moveDown;
 unsigned char moveLeft;
 unsigned char moveRight;
+unsigned char buttonPressed;
 enum moveStates{Move_wait, Move_press};
 int TickMove(int state){
 	moveUp = ~PINA & 0x01;
@@ -222,6 +221,14 @@ int TickMove(int state){
 			state = Move_wait;
 			break;
 	}
+	switch (state){
+		case Move_wait:
+			buttonPressed = 0;
+			break;
+		case Move_press:
+			buttonPressed = 1;
+			break;
+	}
 	return state;
 }
 
@@ -229,9 +236,28 @@ unsigned char pattern = 0x00;
 unsigned char row = 0xFF;
 unsigned char one = 0x01;
 unsigned char j;
-enum LightStates{Light_row0, Light_row1, Light_row2, Light_row3, Light_row4, Light_end};
+unsigned int counter;
+enum LightStates{Light_wait, Light_waitRelease, Light_row0, Light_row1, Light_row2, Light_row3, Light_row4, Light_end};
 int TickLights(int state){
+	
 	switch (state){
+		case Light_wait:
+			pattern = 0x81;
+			row = 0xEE;
+			counter = 0;
+			if (buttonPressed){
+				state = Light_waitRelease;
+			}
+			break;
+		case Light_waitRelease:
+			if (!buttonPressed){
+				state = Light_row0;
+				srand(counter);
+				gameOver = 0;
+				generateFruit();
+			}
+			counter++;
+			break;
 		case Light_row0:
 			if (gameOver){
 				state = Light_end;
@@ -337,7 +363,7 @@ int TickLights(int state){
 			row = 0xEE;
 			break;
 		default:
-			state = Light_row0;
+			state = Light_wait;
 	}
 	PORTC = pattern;
 	PORTD = row;
@@ -360,17 +386,17 @@ int main(void) {
 	const char start = -1;
 
 	task1.state = start;
-	task1.period = 600;
+	task1.period = 500;
 	task1.elapsedTime = task1.period;
 	task1.TickFct = &TickSnake;
 
 	task2.state = start;
-	task2.period = 100;
+	task2.period = 1;
 	task2.elapsedTime = task2.period;
 	task2.TickFct = &TickMove;
 
 	task3.state = start;
-	task3.period = 600;
+	task3.period = 500;
 	task3.elapsedTime = task3.period;
 	task3.TickFct = &TickFruit;
 
